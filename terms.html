@@ -24,6 +24,54 @@
  overflow-x: hidden;
  }
 
+ /* Splash Screen */
+ .splash {
+ position: fixed;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 100%;
+ background: #f7f7f7;
+ display: flex;
+ flex-direction: column;
+ justify-content: center;
+ align-items: center;
+ z-index: 2000;
+ opacity: 0;
+ visibility: hidden;
+ transition: opacity 0.5s ease, visibility 0.5s ease;
+ }
+ .splash-logo {
+ font-size: clamp(32px, 6vw, 40px);
+ font-weight: 600;
+ color: #1f2937;
+ display: flex;
+ align-items: center;
+ animation: pulse 1.5s ease-in-out infinite;
+ }
+ .splash-logo::before {
+ content: "☁️";
+ margin-right: 12px;
+ font-size: clamp(32px, 6vw, 40px);
+ }
+ .splash-spinner {
+ width: 40px;
+ height: 40px;
+ border: 4px solid #6366f1;
+ border-top: 4px solid transparent;
+ border-radius: 50%;
+ animation: spin 1s linear infinite;
+ margin-top: 16px;
+ }
+ @keyframes pulse {
+ 0%, 100% { transform: scale(1); }
+ 50% { transform: scale(1.05); }
+ }
+ @keyframes spin {
+ 0% { transform: rotate(0deg); }
+ 100% { transform: rotate(360deg); }
+ }
+
  /* Desktop Header */
  header {
  background: #fff;
@@ -173,6 +221,10 @@
  .mobile-menu a:hover {
  background: #f5f6ff;
  }
+ .mobile-menu a.active {
+ background: #f5f6ff;
+ color: #6366f1;
+ }
  .mobile-menu .icon {
  margin-right: 12px;
  font-size: 16px;
@@ -184,10 +236,11 @@
  .terms {
  max-width: 1280px;
  margin: 64px auto;
- padding: 0 32px;
+ padding: 32px;
  background: #fff;
  border-radius: 12px;
  border: 1px solid #e5e7eb;
+ box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
  opacity: 0;
  animation: fadeIn 1s ease forwards;
  }
@@ -195,30 +248,32 @@
  to { opacity: 1; }
  }
  .terms h1 {
- font-size: clamp(32px, 5vw, 40px);
- font-weight: 700;
+ font-size: clamp(26px, 5vw, 32px);
+ font-weight: 600;
  color: #1f2937;
  margin-bottom: 24px;
  text-align: center;
+ line-height: 1.3;
+ letter-spacing: -0.01em;
  }
  .terms-section {
  margin-bottom: 32px;
  opacity: 0;
- transform: translateY(20px);
- transition: all 0.5s ease;
+ transition: opacity 0.5s ease;
  }
  .terms-section.visible {
  opacity: 1;
- transform: translateY(0);
  }
  .terms-section h2 {
- font-size: 24px;
+ font-size: 16px;
  font-weight: 600;
  color: #1f2937;
- margin-bottom: 16px;
+ margin-bottom: 12px;
+ line-height: 1.3;
+ letter-spacing: -0.01em;
  }
  .terms-section p {
- font-size: 16px;
+ font-size: 13px;
  color: #6b7280;
  margin-bottom: 16px;
  }
@@ -227,7 +282,7 @@
  padding-left: 20px;
  }
  .terms-section ul li {
- font-size: 16px;
+ font-size: 13px;
  color: #6b7280;
  margin-bottom: 12px;
  position: relative;
@@ -521,10 +576,10 @@
  padding: 0 clamp(12px, 4vw, 16px);
  }
  .terms h1 {
- font-size: clamp(24px, 5vw, 28px);
+ font-size: clamp(22px, 5vw, 26px);
  }
  .terms-section h2 {
- font-size: clamp(18px, 3vw, 20px);
+ font-size: clamp(14px, 3vw, 16px);
  }
  .footer-subscription form {
  flex-direction: column;
@@ -533,6 +588,12 @@
  </style>
 </head>
 <body>
+ <!-- Splash Screen -->
+ <div class="splash" aria-hidden="true">
+ <div class="splash-logo">Cloudy</div>
+ <div class="splash-spinner"></div>
+ </div>
+
  <!-- Mobile Header -->
  <header class="mobile-header">
  <div class="logo">Cloudy</div>
@@ -557,7 +618,7 @@
  <!-- Mobile Menu -->
  <nav class="mobile-menu">
  <ul>
- <li><a href ="index.html"><span class="icon">🏠</span>Home</a></li>
+ <li><a href="index.html"><span class="icon">🏠</span>Home</a></li>
  <li><a href="features.html"><span class="icon">✨</span>Features</a></li>
  <li><a href="pricing.html"><span class="icon">💰</span>Pricing</a></li>
  <li><a href="categories.html"><span class="icon">📚</span>Categories</a></li>
@@ -578,16 +639,17 @@
  <li><a href="security.html"><span class="icon">🔒</span>Security</a></li>
  <li><a href="notice.html"><span class="icon">📢</span>Notices</a></li>
  <li><a href="privacy.html"><span class="icon">🛡️</span>Privacy Policy</a></li>
- <li><a href="terms.html" class="active"><span class="icon">📝</span>Terms of Service</a></li>
+ <li><a href="terms.html"><span class="icon">📝</span>Terms of Service</a></li>
  <li><a href="cookie-settings.html"><span class="icon">🍪</span>Cookie Settings</a></li>
+ <li><a href="docs.html"><span class="icon">📘</span>Docs</a></li>
  <li><span class="user-info" id="user-name"><span class="icon">🙋</span>Welcome, [User]</span></li>
  <li><a href="sign.html"><span class="icon">🚪</span>Sign Out</a></li>
  </ul>
  </nav>
 
  <!-- Terms Section -->
- <div class="terms">
- <h1>Terms of Service</h1>
+ <article class="terms" aria-labelledby="terms-title">
+ <h1 id="terms-title">Terms of Service</h1>
  <div class="terms-section">
  <h2>1. Introduction</h2>
  <p>Welcome to Cloudy! These Terms of Service govern your use of our platform powered by Pi Network. By accessing or using Cloudy, you agree to comply with these terms.</p>
@@ -630,7 +692,7 @@
  <h2>8. Contact Us</h2>
  <p>For questions, contact us at <a href="mailto:support@cloudy.com">support@cloudy.com</a> or visit our <a href="contact-us.html">Contact Us</a> page.</p>
  </div>
- </div>
+ </article>
 
  <!-- Footer -->
  <footer>
@@ -730,7 +792,7 @@
  if (isToggling) return;
  isToggling = true;
  mobileMenu.classList.toggle('open');
- const isOpen = mobileMenu.classList.contains('open');
+ const isOpen = mobileMenu .classList.contains('open');
  hamburger.textContent = isOpen ? '✕' : '☰';
  hamburger.setAttribute('aria-expanded', isOpen);
  setTimeout(() => { isToggling = false; }, 300);
@@ -744,6 +806,14 @@
  });
  });
 
+ // Set active menu item
+ const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+ mobileMenu.querySelectorAll('a').forEach(link => {
+ if (link.getAttribute('href') === currentPage) {
+ link.classList.add('active');
+ }
+ });
+
  // Scroll reveal animations
  const observer = new IntersectionObserver((entries) => {
  entries.forEach(entry => {
@@ -751,17 +821,21 @@
  entry.target.classList.add('visible');
  }
  });
- }, { threshold: 0.1 });
+ }, { threshold: 0.05, rootMargin: '20px' });
 
  document.querySelectorAll('.terms-section, .footer-section').forEach(el => observer.observe(el));
 
  // Mobile nav active state
  document.querySelectorAll('.footer-mobile-nav a').forEach(link => {
+ if (link.getAttribute('href') === currentPage) {
+ link.classList.add('active');
+ }
  link.addEventListener('click', () => {
  document.querySelectorAll('.footer-mobile-nav a').forEach(l => l.classList.remove('active'));
  link.classList.add('active');
  });
  });
  </script>
+ <script src="splash.js"></script>
 </body>
 </html>
