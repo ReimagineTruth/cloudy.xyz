@@ -24,6 +24,54 @@
             overflow-x: hidden;
         }
 
+        /* Splash Screen */
+        .splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f7f7f7;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        .splash-logo {
+            font-size: clamp(32px, 6vw, 40px);
+            font-weight: 600;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        .splash-logo::before {
+            content: "☁️";
+            margin-right: 12px;
+            font-size: clamp(32px, 6vw, 40px);
+        }
+        .splash-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #6366f1;
+            border-top: 4px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-top: 16px;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         /* Desktop Header */
         header {
             background: #fff;
@@ -519,6 +567,7 @@
         .social-icons a:hover {
             color: #6366f1;
             background: #f5f6ff;
+            transform: scale SDisplay: block;
             transform: scale(1.1);
         }
         .footer-powered {
@@ -586,6 +635,12 @@
     </style>
 </head>
 <body>
+    <!-- Splash Screen -->
+    <div class="splash" aria-hidden="true">
+        <div class="splash-logo">Cloudy</div>
+        <div class="splash-spinner"></div>
+    </div>
+
     <!-- Mobile Header -->
     <header class="mobile-header">
         <div class="logo">Cloudy</div>
@@ -851,5 +906,6 @@
             });
         });
     </script>
+    <script src="splash.js"></script>
 </body>
 </html>
