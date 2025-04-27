@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloudy - Creator Profile</title>
+    <title>CloudyPi - Profile</title>
+    <meta name="description" content="Manage your CloudyPi profile and account settings.">
+    <meta name="keywords" content="CloudyPi, Profile, Pi Network, Account">
     <!-- Google Fonts: Inter -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-    <!-- Font Awesome CDN for icons -->
+    <!-- Font Awesome CDN for social icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Pi SDK -->
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -22,6 +26,54 @@
             line-height: 1.5;
             font-size: clamp(14px, 1.8vw, 15px);
             overflow-x: hidden;
+        }
+
+        /* Splash Screen */
+        .splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f7f7f7;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        .splash-logo {
+            font-size: clamp(32px, 6vw, 40px);
+            font-weight: 600;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        .splash-logo::before {
+            content: "☁️";
+            margin-right: 12px;
+            font-size: clamp(32px, 6vw, 40px);
+        }
+        .splash-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #6366f1;
+            border-top: 4px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-top: 16px;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* Desktop Header */
@@ -83,11 +135,6 @@
         nav a:hover {
             background: #f5f6ff;
             color: #6366f1;
-        }
-        nav a.active {
-            background: #f5f6ff;
-            color: #6366f1;
-            font-weight: 600;
         }
 
         /* Mobile Header */
@@ -178,6 +225,10 @@
         .mobile-menu a:hover {
             background: #f5f6ff;
         }
+        .mobile-menu a.active {
+            background: #f5f6ff;
+            color: #6366f1;
+        }
         .mobile-menu .icon {
             margin-right: 12px;
             font-size: 16px;
@@ -189,182 +240,156 @@
         .profile {
             max-width: 1280px;
             margin: 64px auto;
-            padding: 0 clamp(16px, 5vw, 32px);
-        }
-        .profile-header {
+            padding: 32px;
             background: #fff;
-            padding: clamp(24px, 5vw, 32px);
             border-radius: 12px;
+            border: 1px solid #e5e7eb;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            margin-bottom: 32px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 24px;
-            align-items: center;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards;
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        .profile h1 {
+            font-size: clamp(26px, 5vw, 32px);
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 24px;
+            text-align: center;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+        }
+        .profile-info {
+            max-width: 600px;
+            margin: 0 auto;
             opacity: 0;
             transition: opacity 0.5s ease;
         }
-        .profile-header.visible {
+        .profile-info.visible {
             opacity: 1;
         }
-        .profile-header img {
+        .profile-info .avatar {
             width: 120px;
             height: 120px;
             border-radius: 50%;
+            background: #e5e7eb;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: #6b7280;
+            overflow: hidden;
+        }
+        .profile-info .avatar img {
+            width: 100%;
+            height: 100%;
             object-fit: cover;
         }
-        hol .profile-info {
-            flex: 1;
-        }
-        .profile-info h1 {
-            font-size: clamp(22px, 3.5vw, 26px);
+        .profile-info h2 {
+            font-size: 24px;
             font-weight: 600;
             color: #1f2937;
-            line-height: 1.3;
-            letter-spacing: -0.01em;
+            text-align: center;
             margin-bottom: 8px;
         }
-        .profile-info .title {
+        .profile-info p {
             font-size: 14px;
-            font-weight: 400;
             color: #6b7280;
+            text-align: center;
             margin-bottom: 16px;
         }
-        .profile-info .stats {
-            display: flex;
-            gap: 24px;
-            flex-wrap: wrap;
-            margin-bottom: 16px;
+        .profile-form {
+            max-width: 400px;
+            margin: 32px auto;
         }
-        .profile-info .stats span {
-            font-size: 14px;
+        .profile-form label {
+            display: block;
+            font-size: 13px;
             font-weight: 500;
-            color: #6366f1;
+            color: #1f2937;
+            margin-bottom: 8px;
         }
-        .profile-info .rating {
-            color: #f59e0b;
-            font-size: 14px;
+        .profile-form input,
+        .profile-form textarea {
+            width: 100%;
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 400;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            outline: none;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             margin-bottom: 16px;
         }
-        .profile-actions {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
+        .profile-form input:focus,
+        .profile-form textarea:focus {
+            border-color: #6366f1;
+            box-shadow: 0 1px 3px rgba(99, 102, 241, 0.2);
         }
-        .profile-actions button {
+        .profile-form input:invalid:not(:placeholder-shown) {
+            border-color: #ef4444;
+        }
+        .profile-form textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .profile-form input[type="file"] {
+            padding: 8px;
+        }
+        .profile-form button {
+            width: 100%;
             background: linear-gradient(135deg, #6366f1, #4f46e5);
             color: #fff;
             border: none;
-            padding: 10px 20px;
+            padding: 12px;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
-            min-height: 44px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 16px;
         }
-        .profile-actions button:hover {
+        .profile-form button:hover {
             background: linear-gradient(135deg, #4f46e5, #4338ca);
-            transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
-        .profile-actions button.secondary {
-            background: #fff;
-            color: #6366f1;
-            border: 1px solid #6366f1;
+        .profile-form button:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
         }
-        .profile-actions button.secondary:hover {
-            background: #f5f6ff;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-        }
-
-        /* Profile Content */
-        .profile-content {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 32px;
-        }
-        .profile-bio, .profile-products {
-            background: #fff;
-            padding: clamp(16px, 3vw, 24px);
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-        .profile-bio.visible, .profile-products.visible {
-            opacity: 1;
-        }
-        .profile-bio h2, .profile-products h2 {
-            font-size: 18px;
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 16px;
-            line-height: 1.3;
-            letter-spacing: -0.01em;
-        }
-        .profile-bio p {
-            font-size: 13px;
-            font-weight: 400;
-            color: #6b7280;
-            margin-bottom: 16px;
-        }
-        .profile-bio .social-links {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-        .profile-bio .social-links a {
-            color: #6b7280;
-            font-size: 18px;
-            transition: all 0.3s ease;
-            padding: 8px;
-            border-radius: 6px;
-        }
-        .profile-bio .social-links a:hover {
-            color: #6366f1;
-            background: #f5f6ff;
-            transform: scale(1.1);
-        }
-        .profile-products .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
-            gap: 16px;
-        }
-        .product-card {
-            background: #f7f7f7;
-            padding: 16px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-        .product-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-        }
-        .product-card img {
+        .logout-button {
             width: 100%;
-            height: 120px;
-            object-fit: cover;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff;
+            border: none;
+            padding: 12px;
             border-radius: 6px;
-            margin-bottom: 12px;
-        }
-        .product-card h3 {
-            font-size: 14px;
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 8px;
-        }
-        .product-card .price {
             font-size: 13px;
             font-weight: 500;
-            color: #6366f1;
-            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
-        .product-card .rating {
-            color: #f59e0b;
+        .logout-button:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        .error, .success {
             font-size: 12px;
+            margin-bottom: 12px;
+            text-align: center;
+            display: none;
+        }
+        .error {
+            color: #ef4444;
+        }
+        .success {
+            color: #059669;
         }
 
         /* Footer */
@@ -501,6 +526,7 @@
             width: min(100%, 280px);
             outline: none;
             transition: border-color 0.3s ease;
+            box-sizing: border-box;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         .footer-subscription input[type="email"]:focus {
@@ -600,14 +626,11 @@
 
         /* Responsive Design */
         @media (max-width: 1024px) {
-            .header-container, .profile {
+            .header-container {
                 padding: 0 clamp(16px, 4vw, 24px);
             }
-            .profile-header {
-                padding: 24px;
-            }
-            .profile-content {
-                grid-template-columns: 1fr;
+            .profile {
+                padding: 0 clamp(16px, 4vw, 24px);
             }
             .footer-content {
                 grid-template-columns: repeat(2, 1fr);
@@ -619,11 +642,6 @@
             }
             .mobile-header {
                 display: flex;
-            }
-            .profile-header {
-                flex-direction: column;
-                text-align: center;
-                box-shadow: none;
             }
             .profile {
                 padding: 0 clamp(16px, 4vw, 24px);
@@ -647,12 +665,16 @@
             .profile {
                 padding: 0 clamp(12px, 4vw, 16px);
             }
-            .profile-header img {
+            .profile h1 {
+                font-size: clamp(22px, 5vw, 26px);
+            }
+            .profile-info, .profile-form {
+                max-width: 100%;
+            }
+            .profile-info .avatar {
                 width: 80px;
                 height: 80px;
-            }
-            .profile-products .product-grid {
-                grid-template-columns: 1fr;
+                font-size: 32px;
             }
             .footer-subscription form {
                 flex-direction: column;
@@ -661,24 +683,29 @@
     </style>
 </head>
 <body>
+    <!-- Splash Screen -->
+    <div class="splash" aria-hidden="true">
+        <div class="splash-logo">CloudyPi</div>
+        <div class="splash-spinner"></div>
+    </div>
+
     <!-- Mobile Header -->
     <header class="mobile-header">
-        <div class="logo">Cloudy</div>
+        <div class="logo">CloudyPi</div>
         <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">☰</button>
     </header>
 
     <!-- Desktop Header -->
     <header>
         <div class="header-container">
-            <div class="logo">Cloudy</div>
+            <div class="logo">CloudyPi</div>
             <nav>
-                <a href="home.html">Home</a>
+                <a href="index.html">Home</a>
                 <a href="features.html">Features</a>
                 <a href="pricing.html">Pricing</a>
                 <a href="categories.html">Categories</a>
                 <a href="top-creators.html">Top Creators</a>
                 <a href="learnmore.html">Learn More</a>
-                <a href="signup.html">Sign Up</a>
             </nav>
         </div>
     </header>
@@ -686,13 +713,12 @@
     <!-- Mobile Menu -->
     <nav class="mobile-menu">
         <ul>
-            <li><a href="home.html"><span class="icon">🏠</span>Home</a></li>
+            <li><a href="index.html"><span class="icon">🏠</span>Home</a></li>
             <li><a href="features.html"><span class="icon">✨</span>Features</a></li>
             <li><a href="pricing.html"><span class="icon">💰</span>Pricing</a></li>
             <li><a href="categories.html"><span class="icon">📚</span>Categories</a></li>
             <li><a href="top-creators.html"><span class="icon">🌟</span>Top Creators</a></li>
             <li><a href="learnmore.html"><span class="icon">ℹ️</span>Learn More</a></li>
-            <li><a href="signup.html"><span class="icon">🚀</span>Sign Up</a></li>
             <li><a href="explore-more.html"><span class="icon">🔍</span>Explore More</a></li>
             <li><a href="workspace-tools.html"><span class="icon">🛠️</span>Workspace Tools</a></li>
             <li><a href="sell.html"><span class="icon">🛒</span>Sell Your Work</a></li>
@@ -710,67 +736,35 @@
             <li><a href="privacy.html"><span class="icon">🛡️</span>Privacy Policy</a></li>
             <li><a href="terms.html"><span class="icon">📝</span>Terms of Service</a></li>
             <li><a href="cookie-settings.html"><span class="icon">🍪</span>Cookie Settings</a></li>
-            <li><span class="user-info" id="user-name"><span class="icon">🙋</span>Welcome, [User]</span></li>
-            <li><a href="sign.html"><span class="icon">🚪</span>Sign Out</a></li>
+            <li><a href="docs.html"><span class="icon">📘</span>Docs</a></li>
+            <li><a href="signup.html"><span class="icon">✍️</span>Sign Up</a></li>
+            <li><a href="login.html"><span class="icon">🔑</span>Sign In</a></li>
         </ul>
     </nav>
 
     <!-- Profile Section -->
-    <div class="profile">
-        <div class="profile-header">
-            <img src="https://via.placeholder.com/120" alt="Sarah K.">
-            <div class="profile-info">
-                <h1>Sarah K.</h1>
-                <div class="title">Author & Productivity Expert</div>
-                <div class="stats">
-                    <span>50K+ Downloads</span>
-                    <span>10 Products</span>
-                    <span>5K Followers</span>
-                </div>
-                <div class="rating">★★★★★ (4.9/5 from 1,200 reviews)</div>
-            </div>
-            <div class="profile-actions">
-                <button>Follow</button>
-                <button class="secondary">Edit Profile</button>
-            </div>
+    <article class="profile" aria-labelledby="profile-title">
+        <h1 id="profile-title">Your Profile</h1>
+        <div class="profile-info">
+            <div class="avatar" id="avatar">☁️</div>
+            <h2 id="username">Loading...</h2>
+            <p id="email">Loading...</p>
+            <p id="pi-uid">Pi UID: Loading...</p>
+            <p id="bio">No bio provided.</p>
         </div>
-
-        <div class="profile-content">
-            <div class="profile-bio">
-                <h2>About Me</h2>
-                <p>Hi, I’m Sarah! I’m passionate about helping people unlock their potential through practical guides and eBooks. With over 50K downloads, my work focuses on productivity, time management, and personal growth—all available here on Cloudy with Pi payments.</p>
-                <h2>Connect</h2>
-                <div class="social-links">
-                    <a href="https://twitter.com/sarahk" target="_blank" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
-                    <a href="https://instagram.com/sarahk" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                    <a href="https://linkedin.com/in/sarahk" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                </div>
-            </div>
-            <div class="profile-products">
-                <h2>My Products</h2>
-                <div class="product-grid">
-                    <div class="product-card">
-                        <img src="https://via.placeholder.com/200x120?text=eBook+Cover" alt="eBook">
-                        <h3>The Ultimate Guide to Productivity</h3>
-                        <div class="price">3 Pi</div>
-                        <div class="rating">★★★★★ (4.9/5)</div>
-                    </div>
-                    <div class="product-card">
-                        <img src="https://via.placeholder.com/200x120?text=Guide" alt="Guide">
-                        <h3>Daily Habits Planner</h3>
-                        <div class="price">2 Pi</div>
-                        <div class="rating">★★★★☆ (4.8/5)</div>
-                    </div>
-                    <div class="product-card">
-                        <img src="https://via.placeholder.com/200x120?text=eBook" alt="eBook">
-                        <h3>Master Your Morning Routine</h3>
-                        <div class="price">4 Pi</div>
-                        <div class="rating">★★★★★ (4.9/5)</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+        <form class="profile-form" action="/api/auth/profile" method="POST">
+            <div class="error" id="error-message" role="alert" aria-live="assertive"></div>
+            <div class="success" id="success-message" role="alert" aria-live="assertive"></div>
+            <label for="email">Email Address</label>
+            <input type="email" id="form-email" name="email" placeholder="Enter your email">
+            <label for="bio">Bio</label>
+            <textarea id="bio-input" name="bio" placeholder="Tell us about yourself"></textarea>
+            <label for="avatar">Profile Picture</label>
+            <input type="file" id="avatar-input" name="avatar" accept="image/*">
+            <button type="submit" id="submit-button">Update Profile</button>
+            <button type="button" class="logout-button" id="logout-button">Sign Out</button>
+        </form>
+    </article>
 
     <!-- Footer -->
     <footer>
@@ -815,7 +809,7 @@
         </div>
         <div class="footer-mobile-nav">
             <ul>
-                <li><a href="home.html"><span class="icon">🏠</span>Home</a></li>
+                <li><a href="index.html"><span class="icon">🏠</span>Home</a></li>
                 <li><a href="features.html"><span class="icon">✨</span>Features</a></li>
                 <li><a href="pricing.html"><span class="icon">💰</span>Pricing</a></li>
                 <li><a href="discover.html"><span class="icon">🔍</span>Discover</a></li>
@@ -831,30 +825,161 @@
         </div>
         <div class="footer-bottom">
             <div class="footer-bottom-left">
-                <span>© 2025 <span class="footer-app-name">Cloudy</span>. All rights reserved.</span>
+                <span>© 2025 <span class="footer-app-name">CloudyPi</span>. All rights reserved.</span>
                 <span>We do not sell or share your personal information.</span>
                 <div class="footer-bottom-links">
-                    <a href="privacy.html">Privacy Policy</a>
-                    <a href="terms.html">Terms of Service</a>
-                    <a href="cookie-settings.html">Cookie Settings</a>
-                    <a href="whitepaper.html">Whitepaper</a>
-                    <a href="docs.html">Docs</a>
-                    <a href="security.html">Security</a>
-                    <a href="notice.html">Notices</a>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="terms.html">Terms of Service</a></li>
+                    <li><a href="cookie-settings.html">Cookie Settings</a></li>
+                    <li><a href="whitepaper.html">Whitepaper</a></li>
+                    <li><a href="docs.html">Docs</a></li>
+                    <li><a href="security.html">Security</a></li>
+                    <li><a href="notice.html">Notices</a></li>
                 </div>
             </div>
             <div class="social-icons">
-                <a href="https://facebook.com/cloudy" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://twitter.com/cloudy" target="_blank" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
-                <a href="https://instagram.com/cloudy" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                <a href="https://telegram.org/cloudy" target="_blank" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
-                <a href="https://discord.com/cloudy" target="_blank" aria-label="Discord"><i class="fab fa-discord"></i></a>
+                <a href="https://facebook.com/cloudypi" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://twitter.com/cloudypi" target="_blank" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://instagram.com/cloudypi" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://telegram.org/cloudypi" target="_blank" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+                <a href="https://discord.com/cloudypi" target="_blank" aria-label="Discord"><i class="fab fa-discord"></i></a>
             </div>
             <span class="footer-powered">Powered by Pi Network</span>
         </div>
     </footer>
 
     <script>
+        // Initialize Pi SDK
+        let piAvailable = false;
+        if (window.Pi) {
+            Pi.init({ version: "2.0" });
+            piAvailable = true;
+        }
+
+        // Elements
+        const usernameEl = document.querySelector('#username');
+        const emailEl = document.querySelector('#email');
+        const piUidEl = document.querySelector('#pi-uid');
+        const bioEl = document.querySelector('#bio');
+        const avatarEl = document.querySelector('#avatar');
+        const form = document.querySelector('.profile-form');
+        const emailInput = document.querySelector('#form-email');
+        const bioInput = document.querySelector('#bio-input');
+        const avatarInput = document.querySelector('#avatar-input');
+        const submitButton = document.querySelector('#submit-button');
+        const logoutButton = document.querySelector('#logout-button');
+        const errorDiv = document.querySelector('#error-message');
+        const successDiv = document.querySelector('#success-message');
+
+        // Fetch user data
+        async function loadUserProfile() {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    usernameEl.textContent = data.username || 'User';
+                    emailEl.textContent = data.email || 'No email provided';
+                    piUidEl.textContent = `Pi UID: ${data.piUid || 'N/A'}`;
+                    bioEl.textContent = data.bio || 'No bio provided';
+                    emailInput.value = data.email || '';
+                    bioInput.value = data.bio || '';
+                    if (data.avatar) {
+                        const img = document.createElement('img');
+                        img.src = data.avatar;
+                        img.alt = 'Profile Picture';
+                        avatarEl.innerHTML = '';
+                        avatarEl.appendChild(img);
+                    }
+                    document.querySelector('.profile-info').classList.add('visible');
+                } else {
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Failed to load profile. Please try again.';
+                errorDiv.style.display = 'block';
+                console.error('Profile Load Error:', error);
+                setTimeout(() => { window.location.href = 'login.html'; }, 2000);
+            }
+        }
+
+        // Form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = emailInput.value;
+            const bio = bioInput.value;
+            const avatar = avatarInput.files[0];
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!emailRegex.test(email)) {
+                errorDiv.textContent = 'Please enter a valid email address.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('bio', bio);
+            if (avatar) formData.append('avatar', avatar);
+
+            submitButton.disabled = true;
+            submitButton.textContent = 'Updating...';
+            try {
+                const response = await fetch('/api/auth/profile', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    successDiv.textContent = 'Profile updated successfully!';
+                    successDiv.style.display = 'block';
+                    errorDiv.style.display = 'none';
+                    // Update displayed info
+                    emailEl.textContent = email;
+                    bioEl.textContent = bio || 'No bio provided';
+                    if (data.avatarUrl) {
+                        const img = document.createElement('img');
+                        img.src = data.avatarUrl;
+                        img.alt = 'Profile Picture';
+                        avatarEl.innerHTML = '';
+                        avatarEl.appendChild(img);
+                    }
+                } else {
+                    errorDiv.textContent = data.error || 'Failed to update profile.';
+                    errorDiv.style.display = 'block';
+                    successDiv.style.display = 'none';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Network error. Please try again.';
+                errorDiv.style.display = 'block';
+                successDiv.style.display = 'none';
+                console.error('Profile Update Error:', error);
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Update Profile';
+            }
+        });
+
+        // Logout
+        logoutButton.addEventListener('click', async () => {
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                document.cookie = 'jwt_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure';
+                document.cookie = 'user_data=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure';
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Logout Error:', error);
+                window.location.href = 'login.html';
+            }
+        });
+
         // Header shadow on scroll
         window.addEventListener('scroll', () => {
             const header = document.querySelector('header');
@@ -884,6 +1009,14 @@
             });
         });
 
+        // Set active menu item
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            if (link.getAttribute('href') === currentPage) {
+                link.classList.add('active');
+            }
+        });
+
         // Scroll reveal animations
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -893,23 +1026,22 @@
             });
         }, { threshold: 0.05, rootMargin: '20px' });
 
-        document.querySelectorAll('.profile-header, .profile-bio, .profile-products, .footer-section').forEach(el => observer.observe(el));
-
-        // Highlight active nav link
-        const currentPage = window.location.pathname.split('/').pop() || 'home.html';
-        document.querySelectorAll('header nav a, .footer-mobile-nav a').forEach(link => {
-            if (link.getAttribute('href') === currentPage) {
-                link.classList.add('active');
-            }
-        });
+        document.querySelectorAll('.profile-info, .profile-form, .footer-section').forEach(el => observer.observe(el));
 
         // Mobile nav active state
         document.querySelectorAll('.footer-mobile-nav a').forEach(link => {
+            if (link.getAttribute('href') === currentPage) {
+                link.classList.add('active');
+            }
             link.addEventListener('click', () => {
                 document.querySelectorAll('.footer-mobile-nav a').forEach(l => l.classList.remove('active'));
                 link.classList.add('active');
             });
         });
+
+        // Load profile on page load
+        document.addEventListener('DOMContentLoaded', loadUserProfile);
     </script>
+    <script src="splash.js"></script>
 </body>
 </html>
