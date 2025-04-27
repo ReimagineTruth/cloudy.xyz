@@ -24,6 +24,54 @@
             overflow-x: hidden;
         }
 
+        /* Splash Screen */
+        .splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f7f7f7;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        .splash-logo {
+            font-size: clamp(32px, 6vw, 40px);
+            font-weight: 600;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        .splash-logo::before {
+            content: "☁️";
+            margin-right: 12px;
+            font-size: clamp(32px, 6vw, 40px);
+        }
+        .splash-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #6366f1;
+            border-top: 4px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-top: 16px;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         /* Desktop Header */
         header {
             background: #fff;
@@ -173,6 +221,10 @@
         .mobile-menu a:hover {
             background: #f5f6ff;
         }
+        .mobile-menu a.active {
+            background: #f5f6ff;
+            color: #6366f1;
+        }
         .mobile-menu .icon {
             margin-right: 12px;
             font-size: 16px;
@@ -196,13 +248,15 @@
             to { opacity: 1; }
         }
         .notices-header h1 {
-            font-size: clamp(32px, 5vw, 40px);
-            font-weight: 700;
+            font-size: clamp(26px, 5vw, 32px);
+            font-weight: 600;
             color: #1f2937;
             margin-bottom: 16px;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
         }
         .notices-header p {
-            font-size: clamp(16px, 3vw, 18px);
+            font-size: clamp(14px, 2vw, 16px);
             color: #6b7280;
             max-width: 800px;
             margin: 0 auto;
@@ -214,25 +268,26 @@
             border-radius: 12px;
             max-width: 900px;
             margin: 0 auto;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
         .notice-section {
             margin-bottom: 32px;
             opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.5s ease;
+            transition: opacity 0.5s ease;
         }
         .notice-section.visible {
             opacity: 1;
-            transform: translateY(0);
         }
         .notice-section h2 {
-            font-size: 24px;
+            font-size: 16px;
             font-weight: 600;
             color: #1f2937;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
         }
         .notice-section p {
-            font-size: 16px;
+            font-size: 13px;
             color: #6b7280;
             margin-bottom: 16px;
         }
@@ -241,7 +296,7 @@
             padding-left: 20px;
         }
         .notice-section ul li {
-            font-size: 16px;
+            font-size: 13px;
             color: #6b7280;
             margin-bottom: 12px;
             position: relative;
@@ -535,15 +590,21 @@
                 padding: 0 clamp(12px, 4vw, 16px);
             }
             .notices-header h1 {
-                font-size: clamp(24px, 5vw, 28px);
+                font-size: clamp(22px, 5vw, 26px);
             }
             .notice-section h2 {
-                font-size: clamp(18px, 3vw, 20px);
+                font-size: 14px;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Splash Screen -->
+    <div class="splash" aria-hidden="true">
+        <div class="splash-logo">Cloudy</div>
+        <div class="splash-spinner"></div>
+    </div>
+
     <!-- Mobile Header -->
     <header class="mobile-header">
         <div class="logo">Cloudy</div>
@@ -587,10 +648,11 @@
             <li><a href="profile.html"><span class="icon">👤</span>Profile</a></li>
             <li><a href="whitepaper.html"><span class="icon">📄</span>Whitepaper</a></li>
             <li><a href="security.html"><span class="icon">🔒</span>Security</a></li>
-            <li><a href="notice.html" class="active"><span class="icon">📢</span>Notices</a></li>
+            <li><a href="notice.html"><span class="icon">📢</span>Notices</a></li>
             <li><a href="privacy.html"><span class="icon">🛡️</span>Privacy Policy</a></li>
             <li><a href="terms.html"><span class="icon">📝</span>Terms of Service</a></li>
             <li><a href="cookie-settings.html"><span class="icon">🍪</span>Cookie Settings</a></li>
+            <li><a href="docs.html"><span class="icon">📘</span>Docs</a></li>
             <li><span class="user-info" id="user-name"><span class="icon">🙋</span>Welcome, [User]</span></li>
             <li><a href="sign.html"><span class="icon">🚪</span>Sign Out</a></li>
         </ul>
@@ -740,6 +802,14 @@
             });
         });
 
+        // Set active menu item
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            if (link.getAttribute('href') === currentPage) {
+                link.classList.add('active');
+            }
+        });
+
         // Scroll reveal animations
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -747,7 +817,7 @@
                     entry.target.classList.add('visible');
                 }
             });
-        }, { threshold: 0.1 });
+        }, { threshold: 0.05, rootMargin: '20px' });
 
         document.querySelectorAll('.notice-section, .footer-section').forEach(el => observer.observe(el));
 
@@ -759,5 +829,6 @@
             });
         });
     </script>
+    <script src="splash.js"></script>
 </body>
 </html>
