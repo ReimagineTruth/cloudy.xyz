@@ -3,59 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - CloudyPi.xyz</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>CloudyPi - Sign In</title>
+    <meta name="description" content="Sign in to CloudyPi using your Pi Network account or email.">
+    <meta name="keywords" content="CloudyPi, Sign In, Pi Network, Login">
+    <!-- Google Fonts: Inter -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <!-- Font Awesome CDN for social icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- Pi SDK -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <!-- Our authentication script -->
-    <script src="js/pi-auth.js"></script>
-    <script>
-        Pi.init({ version: "2.0", apiKey: "oosvdfsis9dh2clk6cmka8bfg8jg3gfmwncl9xcukoek7ky2mh7z8xymohvbfiff" });
-
-        async function authenticateWithPi() {
-            try {
-                const scopes = ['payments', 'username'];
-                const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
-                
-                if (auth) {
-                    console.log('User authenticated with Pi Network:', auth);
-                    // Send auth data to your backend
-                    const response = await fetch('/api/auth/login', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            accessToken: auth.accessToken,
-                            username: auth.user.username
-                        })
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        localStorage.setItem('token', data.token);
-                        window.location.href = '/dashboard.html';
-                    } else {
-                        showError('Failed to log in. Please try again.');
-                    }
-                }
-            } catch (error) {
-                console.error('Pi Network authentication error:', error);
-                showError('Authentication failed. Please try again.');
-            }
-        }
-
-        function onIncompletePaymentFound(payment) {
-            console.log('Incomplete payment found:', payment);
-            // Handle incomplete payment
-        }
-
-        function showError(message) {
-            const errorDiv = document.getElementById('error-message');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-        }
-    </script>
     <style>
         * {
             box-sizing: border-box;
@@ -63,19 +19,72 @@
             padding: 0;
         }
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-weight: 400;
             background: #f7f7f7;
             color: #2d2d2d;
             line-height: 1.5;
-            font-size: 15px;
+            font-size: clamp(14px, 1.8vw, 15px);
+            overflow-x: hidden;
         }
+
+        /* Splash Screen */
+        .splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f7f7f7;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        .splash-logo {
+            font-size: clamp(32px, 6vw, 40px);
+            font-weight: 600;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        .splash-logo::before {
+            content: "☁️";
+            margin-right: 12px;
+            font-size: clamp(32px, 6vw, 40px);
+        }
+        .splash-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #6366f1;
+            border-top: 4px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-top: 16px;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Desktop Header */
         header {
             background: #fff;
             padding: 16px 32px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-bottom: none;
             position: sticky;
             top: 0;
             z-index: 1000;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         .header-container {
             max-width: 1280px;
@@ -83,32 +92,56 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-wrap: wrap;
         }
         .logo {
             font-size: 22px;
             font-weight: 600;
             color: #1f2937;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            transition: transform 0.3s ease;
         }
-        .logo::before { content: "☁️"; margin-right: 8px; }
+        .logo::before {
+            content: "☁️";
+            margin-right: 8px;
+            font-size: 22px;
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+        .logo:hover {
+            transform: scale(1.05);
+        }
+        .logo:hover::before {
+            transform: translateY(-2px);
+        }
         nav {
             display: flex;
             align-items: center;
+            flex-wrap: wrap;
             gap: 12px;
         }
         nav a {
             color: #4b5563;
             text-decoration: none;
+            margin: 8px clamp(12px, 2vw, 16px) 8px 0;
+            font-size: 13px;
             font-weight: 500;
             padding: 8px 12px;
             border-radius: 6px;
-            transition: background 0.2s ease;
+            transition: background 0.2s ease, color 0.2s ease;
         }
-        nav a:hover { background: #f5f6ff; color: #6366f1; }
-        nav a.active { background: #f5f6ff; color: #6366f1; font-weight: 600; }
+        nav a:hover {
+            background: #f5f6ff;
+            color: #6366f1;
+        }
+
+        /* Mobile Header */
         .mobile-header {
             display: none;
             background: #fff;
-            padding: 12px 16px;
+            padding: clamp(10px, 3vw, 12px) clamp(12px, 4vw, 16px);
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -120,8 +153,15 @@
             font-size: 18px;
             font-weight: 600;
             color: #1f2937;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
         }
-        .mobile-header .logo::before { content: "☁️"; margin-right: 6px; font-size: 20px; }
+        .mobile-header .logo::before {
+            content: "☁️";
+            margin-right: 6px;
+            font-size: 20px;
+        }
         .hamburger {
             font-size: 20px;
             background: none;
@@ -131,278 +171,950 @@
             padding: 10px;
             border-radius: 6px;
             transition: all 0.2s ease;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .hamburger:hover { background: #f5f6ff; color: #1f2937; }
+        .hamburger:hover {
+            background: #f5f6ff;
+            color: #1f2937;
+        }
+
+        /* Mobile Menu */
         .mobile-menu {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100vh;
+            max-height: 100vh;
             background: #fff;
             padding: 60px 16px;
             z-index: 999;
             visibility: hidden;
             opacity: 0;
-            transition: visibility 0s linear 0.3s, opacity 0.3s ease;
+            transition: visibility 0.3s, opacity 0.3s ease;
             overflow-y: auto;
+            box-sizing: border-box;
         }
         .mobile-menu.open {
             display: block;
             visibility: visible;
             opacity: 1;
-            transition: visibility 0s linear 0s, opacity 0.3s ease;
+            transform: translateX(0);
         }
-        .mobile-menu ul { list-style: none; }
-        .mobile-menu li { margin: 8px 0; }
+        .mobile-menu ul {
+            list-style: none;
+        }
+        .mobile-menu li {
+            margin: 8px 0;
+        }
         .mobile-menu a, .mobile-menu span {
             color: #374151;
             text-decoration: none;
             font-size: 15px;
             font-weight: 500;
-            padding: 12px;
-            border-radius: 6px;
             display: flex;
             align-items: center;
+            padding: 12px;
+            border-radius: 6px;
             transition: background 0.2s ease;
         }
-        .mobile-menu a:hover { background: #f5f6ff; }
-        .mobile-menu .icon { margin-right: 12px; font-size: 16px; }
-        .container {
-            max-width: 1280px;
-            margin: 64px auto;
-            padding: 0 32px;
+        .mobile-menu a:hover {
+            background: #f5f6ff;
+        }
+        .mobile-menu a.active {
+            background: #f5f6ff;
+            color: #6366f1;
+        }
+        .mobile-menu .icon {
+            margin-right: 12px;
+            font-size: 16px;
+            width: 16px;
             text-align: center;
         }
-        h1 {
-            font-size: 32px;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 16px;
-        }
-        p {
-            color: #6b7280;
-            font-size: 16px;
-            margin-bottom: 32px;
-        }
-        .login-box {
-            background: #fff;
+
+        /* Login Section */
+        .login {
+            max-width: 1280px;
+            margin: 64px auto;
             padding: 32px;
+            background: #fff;
             border-radius: 12px;
+            border: 1px solid #e5e7eb;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            opacity: 0;
+            animation: fadeIn 1s ease forwards;
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        .login h1 {
+            font-size: clamp(26px, 5vw, 32px);
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 24px;
+            text-align: center;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+        }
+        .login-form {
             max-width: 400px;
             margin: 0 auto;
+            opacity: 0;
+            transition: opacity 0.5s ease;
         }
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left;
+        .login-form.visible {
+            opacity: 1;
         }
-        .form-group label {
+        .login-form label {
             display: block;
-            margin-bottom: 8px;
-            color: #374151;
+            font-size: 13px;
             font-weight: 500;
+            color: #1f2937;
+            margin-bottom: 8px;
         }
-        .form-group input {
+        .login-form input[type="email"],
+        .login-form input[type="password"] {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #d1d5db;
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 400;
+            border: 1px solid #e5e7eb;
             border-radius: 6px;
-            font-size: 14px;
-            transition: border-color 0.2s ease;
-        }
-        .form-group input:focus {
             outline: none;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 16px;
+        }
+        .login-form input:focus {
             border-color: #6366f1;
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+            box-shadow: 0 1px 3px rgba(99, 102, 241, 0.2);
         }
-        .error-message {
-            color: #dc2626;
-            font-size: 14px;
-            margin-top: 8px;
-            display: none;
+        .login-form input:invalid:not(:placeholder-shown) {
+            border-color: #ef4444;
         }
-        .success-message {
-            color: #059669;
-            font-size: 14px;
-            margin-top: 8px;
-            display: none;
+        .login-form .password-container {
+            position: relative;
         }
-        .submit-button {
-            background: #6366f1;
-            color: white;
+        .login-form .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
             border: none;
-            padding: 12px 24px;
+            cursor: pointer;
+            font-size: 16px;
+            color: #6b7280;
+            padding: 4px;
+        }
+        .login-form .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .login-form input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #6366f1;
+        }
+        .login-form .remember-me label {
+            font-size: 13px;
+            color: #6b7280;
+        }
+        .login-form .forgot-password {
+            font-size: 13px;
+            color: #6366f1;
+            text-decoration: none;
+            text-align: right;
+            display: block;
+            margin-bottom: 16px;
+        }
+        .login-form .forgot-password:hover {
+            color: #4f46e5;
+        }
+        .login-form button[type="submit"] {
+            width: 100%;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: #fff;
+            border: none;
+            padding: 12px;
             border-radius: 6px;
+            font-size: 13px;
             font-weight: 500;
             cursor: pointer;
-            width: 100%;
-            transition: background-color 0.2s ease;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
-        .submit-button:hover {
-            background: #4f46e5;
+        .login-form button[type="submit"]:hover {
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
-        .submit-button:disabled {
-            background: #9ca3af;
+        .login-form button:disabled {
+            background: #d1d5db;
             cursor: not-allowed;
         }
+        .login-form p {
+            font-size: 13px;
+            color: #6b7280;
+            text-align: center;
+            margin-top: 16px;
+        }
+        .login-form a {
+            color: #6366f1;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .login-form a:hover {
+            color: #4f46e5;
+        }
+        .error {
+            color: #ef4444;
+            font-size: 12px;
+            margin-bottom: 12px;
+            text-align: center;
+            display: none;
+        }
         .pi-button {
-            background: #8A2BE2;
-            color: white;
+            width: 100%;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: #fff;
             border: none;
-            padding: 12px 24px;
+            padding: 12px;
             border-radius: 6px;
+            font-size: 13px;
             font-weight: 500;
             cursor: pointer;
-            width: 100%;
-            margin-top: 12px;
-            transition: background-color 0.2s ease;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         .pi-button:hover {
-            background: #7B1FA2;
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
+        .pi-button:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+        .pi-button.loading::after {
+            content: "";
+            width: 16px;
+            height: 16px;
+            border: 2px solid #fff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-left: 8px;
+        }
+        .username-display {
+            font-size: 13px;
+            color: #1f2937;
+            margin-bottom: 16px;
+            text-align: center;
+            display: none;
+        }
+        .or-divider {
+            position: relative;
+            margin: 24px 0;
+            text-align: center;
+        }
+        .or-divider::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            border-top: 1px solid #e5e7eb;
+        }
+        .or-divider span {
+            background: #fff;
+            padding: 0 12px;
+            font-size: 13px;
+            color: #6b7280;
+            position: relative;
+        }
+
+        /* Footer */
         footer {
             background: #fff;
             color: #6b7280;
-            padding: 48px 32px;
+            padding: 48px clamp(16px, 5vw, 32px);
+            border-top: none;
             box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.08);
-            margin-top: 64px;
         }
         .footer-content {
             max-width: 1280px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
             gap: 32px;
+        }
+        .footer-section {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .footer-section.visible {
+            opacity: 1;
         }
         .footer-section h4 {
             font-size: 15px;
             font-weight: 600;
             margin-bottom: 16px;
             color: #1f2937;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
         }
-        .footer-section ul { list-style: none; }
-        .footer-section li { margin-bottom: 8px; }
+        .footer-section ul {
+            list-style: none;
+        }
+        .footer-section ul li {
+            margin-bottom: 8px;
+        }
         .footer-section a {
             color: #6b7280;
             text-decoration: none;
             font-size: 13px;
+            font-weight: 400;
             transition: color 0.2s ease;
+            display: block;
+            padding: 6px 0;
+            border-radius: 4px;
         }
-        .footer-section a:hover { color: #6366f1; }
+        .footer-section a:hover {
+            color: #6366f1;
+            background: #f5f6ff;
+        }
+
+        /* Mobile Bottom Navigation */
+        .footer-mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            padding: 12px 16px;
+            box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            text-align: center;
+        }
+        .footer-mobile-nav ul {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            list-style: none;
+        }
+        .footer-mobile-nav li {
+            flex: 1;
+        }
+        .footer-mobile-nav a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 8px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        .footer-mobile-nav a:hover, .footer-mobile-nav a.active {
+            color: #6366f1;
+            background: #f5f6ff;
+        }
+        .footer-mobile-nav .icon {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        /* Subscription Form */
+        .footer-subscription {
+            max-width: 1280px;
+            margin: 32px auto 0;
+            padding: 24px;
+            background: #f7f7f7;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        .footer-subscription h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+        }
+        .footer-subscription form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            flex-direction: column;
+        }
+        @media (min-width: 480px) {
+            .footer-subscription form {
+                flex-direction: row;
+            }
+        }
+        .footer-subscription input[type="email"] {
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 400;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            width: min(100%, 280px);
+            outline: none;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .footer-subscription input[type="email"]:focus {
+            border-color: #6366f1;
+            box-shadow: 0 1px 3px rgba(99, 102, 241, 0.2);
+        }
+        .footer-subscription button {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 44px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .footer-subscription button:hover {
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Footer Bottom */
         .footer-bottom {
             max-width: 1280px;
             margin: 32px auto 0;
             font-size: 13px;
+            font-weight: 400;
             color: #6b7280;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 24px;
+            text-align: center;
         }
-        .footer-app-name { font-weight: 600; color: #6366f1; }
+        .footer-bottom-left {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+        .footer-bottom-links {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .footer-bottom-links a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 400;
+            transition: color 0.2s ease;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .footer-bottom-links a:hover {
+            color: #6366f1;
+            background: #f5f6ff;
+        }
+        .footer-app-name {
+            font-weight: 600;
+            color: #6366f1;
+        }
+        .social-icons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex: 1;
+        }
+        .social-icons a {
+            color: #6b7280;
+            font-size: clamp(16px, 2.5vw, 18px);
+            transition: all 0.3s ease;
+            padding: 8px;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+        .social-icons a:hover {
+            color: #6366f1;
+            background: #f5f6ff;
+            transform: scale(1.1);
+        }
+        .footer-powered {
+            flex: 1;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .header-container {
+                padding: 0 clamp(16px, 4vw, 24px);
+            }
+            .login {
+                padding: 0 clamp(16px, 4vw, 24px);
+            }
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
         @media (max-width: 768px) {
-            header { display: none; }
-            .mobile-header { display: flex; }
-            .container { padding: 0 16px; }
-            h1 { font-size: 28px; }
+            header {
+                display: none;
+            }
+            .mobile-header {
+                display: flex;
+            }
+            .login {
+                padding: 0 clamp(16px, 4vw, 24px);
+            }
+            .footer-content {
+                display: none;
+            }
+            .footer-mobile-nav {
+                display: block;
+            }
+            .footer-bottom {
+                flex-direction: column;
+                gap: 16px;
+            }
+            .footer-bottom-left, .social-icons, .footer-powered {
+                flex: none;
+                width: 100%;
+            }
+        }
+        @media (max-width: 480px) {
+            .login {
+                padding: 0 clamp(12px, 4vw, 16px);
+            }
+            .login h1 {
+                font-size: clamp(22px, 5vw, 26px);
+            }
+            .login-form {
+                max-width: 100%;
+            }
+            .footer-subscription form {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
-    <div class="bg-white p-8 rounded-lg shadow-md w-96">
-        <div class="text-center mb-8">
-            <h1 class="text-2xl font-bold text-gray-800">Welcome to CloudyPi</h1>
-            <p class="text-gray-600">Sign in to your account</p>
-        </div>
-
-        <!-- Pi Network Login Button -->
-        <div class="mb-6">
-            <button onclick="authenticateWithPi()" 
-                    class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 flex items-center justify-center">
-                <img src="https://minepi.com/favicon.ico" alt="Pi Network" class="w-6 h-6 mr-2">
-                Sign in with Pi Network
-            </button>
-        </div>
-
-        <div class="relative my-6">
-            <div class="absolute inset-0 flex items-center">
-                <div class="w-full border-t border-gray-300"></div>
-            </div>
-            <div class="relative flex justify-center text-sm">
-                <span class="px-2 bg-white text-gray-500">Or continue with email</span>
-            </div>
-        </div>
-
-        <!-- Traditional Login Form -->
-        <form id="loginForm" class="space-y-4">
-            <div>
-                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                <input type="email" id="email" name="email" required
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500">
-            </div>
-
-            <div>
-                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                <input type="password" id="password" name="password" required
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500">
-            </div>
-
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <input type="checkbox" id="remember" name="remember"
-                        class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
-                    <label for="remember" class="ml-2 block text-sm text-gray-900">Remember me</label>
-                </div>
-
-                <a href="#" class="text-sm text-purple-600 hover:text-purple-500">Forgot password?</a>
-            </div>
-
-            <button type="submit"
-                class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50">
-                Sign in
-            </button>
-        </form>
-
-        <p class="mt-4 text-center text-sm text-gray-600">
-            Don't have an account?
-            <a href="signup.html" class="font-medium text-purple-600 hover:text-purple-500">Sign up</a>
-        </p>
+<body>
+    <!-- Splash Screen -->
+    <div class="splash" aria-hidden="true">
+        <div class="splash-logo">CloudyPi</div>
+        <div class="splash-spinner"></div>
     </div>
 
-    <div id="error-message" class="error-message"></div>
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <div class="logo">CloudyPi</div>
+        <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">☰</button>
+    </header>
+
+    <!-- Desktop Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo">CloudyPi</div>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="features.html">Features</a>
+                <a href="pricing.html">Pricing</a>
+                <a href="categories.html">Categories</a>
+                <a href="top-creators.html">Top Creators</a>
+                <a href="learnmore.html">Learn More</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <nav class="mobile-menu">
+        <ul>
+            <li><a href="index.html"><span class="icon">🏠</span>Home</a></li>
+            <li><a href="features.html"><span class="icon">✨</span>Features</a></li>
+            <li><a href="pricing.html"><span class="icon">💰</span>Pricing</a></li>
+            <li><a href="categories.html"><span class="icon">📚</span>Categories</a></li>
+            <li><a href="top-creators.html"><span class="icon">🌟</span>Top Creators</a></li>
+            <li><a href="learnmore.html"><span class="icon">ℹ️</span>Learn More</a></li>
+            <li><a href="explore-more.html"><span class="icon">🔍</span>Explore More</a></li>
+            <li><a href="workspace-tools.html"><span class="icon">🛠️</span>Workspace Tools</a></li>
+            <li><a href="sell.html"><span class="icon">🛒</span>Sell Your Work</a></li>
+            <li><a href="our-story.html"><span class="icon">📖</span>Our Story</a></li>
+            <li><a href="pi-payments.html"><span class="icon">π</span>Pi Payments</a></li>
+            <li><a href="email-subscribers.html"><span class="icon">✉️</span>Email Subscribers</a></li>
+            <li><a href="new-releases.html"><span class="icon">🆕</span>New Releases</a></li>
+            <li><a href="team.html"><span class="icon">👥</span>Team</a></li>
+            <li><a href="discover.html"><span class="icon">🔍</span>Discover</a></li>
+            <li><a href="dashboard.html"><span class="icon">📊</span>Dashboard</a></li>
+            <li><a href="profile.html"><span class="icon">👤</span>Profile</a></li>
+            <li><a href="whitepaper.html"><span class="icon">📄</span>Whitepaper</a></li>
+            <li><a href="security.html"><span class="icon">🔒</span>Security</a></li>
+            <li><a href="notice.html"><span class="icon">📢</span>Notices</a></li>
+            <li><a href="privacy.html"><span class="icon">🛡️</span>Privacy Policy</a></li>
+            <li><a href="terms.html"><span class="icon">📝</span>Terms of Service</a></li>
+            <li><a href="cookie-settings.html"><span class="icon">🍪</span>Cookie Settings</a></li>
+            <li><a href="docs.html"><span class="icon">📘</span>Docs</a></li>
+            <li><a href="signup.html"><span class="icon">✍️</span>Sign Up</a></li>
+            <li><a href="login.html"><span class="icon">🔑</span>Sign In</a></li>
+        </ul>
+    </nav>
+
+    <!-- Login Section -->
+    <article class="login" aria-labelledby="login-title">
+        <h1 id="login-title">Sign In to CloudyPi</h1>
+        <form class="login-form" action="/api/auth/login" method="POST">
+            <div class="error" id="error-message" role="alert" aria-live="assertive"></div>
+            <button type="button" class="pi-button" id="pi-login" aria-label="Sign in with Pi Network">
+                <span>☁️</span> Sign In with Pi
+            </button>
+            <p class="username-display" id="username-display">Connected as: <span id="pi-username"></span></p>
+            <input type="hidden" id="pi-uid" name="pi-uid">
+            <input type="hidden" id="pi-access-token" name="pi-access-token">
+            <div class="or-divider">
+                <span>Or continue with email</span>
+            </div>
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="Enter your email">
+            <label for="password">Password</label>
+            <div class="password-container">
+                <input type="password" id="password" name="password" placeholder="Enter your password">
+                <button type="button" class="toggle-password" aria-label="Show password">👁️</button>
+            </div>
+            <div class="remember-me">
+                <input type="checkbox" id="remember" name="remember">
+                <label for="remember">Remember Me</label>
+            </div>
+            <a href="forgot-password.html" class="forgot-password">Forgot Password?</a>
+            <button type="submit" id="submit-button">Sign In</button>
+            <p>Don’t have an account? <a href="signup.html">Sign Up</a></p>
+        </form>
+    </article>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Explore more ☁️</h4>
+                <ul>
+                    <li><a href="explore-more.html">Explore More</a></li>
+                    <li><a href="categories.html">Categories</a></li>
+                    <li><a href="top-creators.html">Top Creators</a></li>
+                    <li><a href="new-releases.html">New Releases</a></li>
+                    <li><a href="discover.html">Discover</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Create</h4>
+                <ul>
+                    <li><a href="workspace-tools.html">Workspace Tools</a></li>
+                    <li><a href="sell.html">Sell Your Work</a></li>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="profile.html">Profile</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>About</h4>
+                <ul>
+                    <li><a href="our-story.html">Our Story</a></li>
+                    <li><a href="pi-payments.html">Pi Payments</a></li>
+                    <li><a href="team.html">Team</a></li>
+                    <li><a href="whitepaper.html">Whitepaper</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="help-center.html">Help Center</a></li>
+                    <li><a href="contact-us.html">Contact Us</a></li>
+                    <li><a href="email-subscribers.html">Email Subscribers</a></li>
+                    <li><a href="pricing.html">Pricing</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-mobile-nav">
+            <ul>
+                <li><a href="index.html"><span class="icon">🏠</span>Home</a></li>
+                <li><a href="features.html"><span class="icon">✨</span>Features</a></li>
+                <li><a href="pricing.html"><span class="icon">💰</span>Pricing</a></li>
+                <li><a href="discover.html"><span class="icon">🔍</span>Discover</a></li>
+                <li><a href="profile.html"><span class="icon">👤</span>Profile</a></li>
+            </ul>
+        </div>
+        <div class="footer-subscription">
+            <h4>Subscribe to Our Newsletter ☁️</h4>
+            <form>
+                <input type="email" placeholder="Enter your email" required>
+                <button type="submit">Subscribe</button>
+            </form>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-bottom-left">
+                <span>© 2025 <span class="footer-app-name">CloudyPi</span>. All rights reserved.</span>
+                <span>We do not sell or share your personal information.</span>
+                <div class="footer-bottom-links">
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="terms.html">Terms of Service</a>
+                    <a href="cookie-settings.html">Cookie Settings</a>
+                    <a href="whitepaper.html">Whitepaper</a>
+                    <a href="docs.html">Docs</a>
+                    <a href="security.html">Security</a>
+                    <a href="notice.html">Notices</a>
+                </div>
+            </div>
+            <div class="social-icons">
+                <a href="https://facebook.com/cloudypi" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://twitter.com/cloudypi" target="_blank" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://instagram.com/cloudypi" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://telegram.org/cloudypi" target="_blank" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+                <a href="https://discord.com/cloudypi" target="_blank" aria-label="Discord"><i class="fab fa-discord"></i></a>
+            </div>
+            <span class="footer-powered">Powered by Pi Network</span>
+        </div>
+    </footer>
 
     <script>
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+        // Initialize Pi SDK
+        let piAvailable = false;
+        if (window.Pi) {
+            Pi.init({ version: "2.0" });
+            piAvailable = true;
+        }
 
+        // Pi Authentication
+        const piButton = document.querySelector('#pi-login');
+        const submitButton = document.querySelector('#submit-button');
+        const usernameDisplay = document.querySelector('#username-display');
+        const piUsername = document.querySelector('#pi-username');
+        const piUid = document.querySelector('#pi-uid');
+        const piAccessToken = document.querySelector('#pi-access-token');
+        const form = document.querySelector('.login-form');
+        const errorDiv = document.querySelector('#error-message');
+
+        // Fallback for non-Pi Browser
+        if (!piAvailable) {
+            piButton.disabled = true;
+            piButton.textContent = 'Pi Browser Required';
+            errorDiv.textContent = 'Please open this page in the Pi Browser to sign in with Pi Network.';
+            errorDiv.style.display = 'block';
+        }
+
+        piButton.addEventListener('click', async () => {
+            if (!piAvailable) return;
+            piButton.disabled = true;
+            piButton.classList.add('loading');
             try {
-                const response = await fetch('http://localhost:5000/api/auth/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email, password })
-                });
+                const scopes = ['username', 'payments'];
+                const authResult = await Pi.authenticate(scopes, onIncompletePaymentFound);
+                piUsername.textContent = authResult.user.username;
+                piUid.value = authResult.user.uid;
+                piAccessToken.value = authResult.accessToken;
+                usernameDisplay.style.display = 'block';
+                errorDiv.style.display = 'none';
+                piButton.textContent = 'Connected ✓';
+                piButton.classList.remove('loading');
 
-                const data = await response.json();
-
-                if (response.ok) {
-                    localStorage.setItem('jwt_token', data.token);
-                    localStorage.setItem('user_data', JSON.stringify(data.user));
-                    window.location.href = '/dashboard.html';
-                } else {
-                    alert(data.message || 'Login failed');
-                }
+                // Auto-submit for Pi login
+                submitButton.disabled = true;
+                submitButton.textContent = 'Signing In...';
+                await submitPiLogin(authResult.user.uid, authResult.accessToken);
             } catch (error) {
-                console.error('Login error:', error);
-                alert('Login failed. Please try again.');
+                errorDiv.textContent = 'Pi authentication failed. Please try again.';
+                errorDiv.style.display = 'block';
+                piButton.disabled = false;
+                piButton.classList.remove('loading');
+                console.error('Pi Auth Error:', error);
             }
         });
+
+        async function submitPiLogin(piUid, piAccessToken) {
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ piUid, accessToken: piAccessToken })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    // Use HttpOnly cookie instead of localStorage
+                    document.cookie = `jwt_token=${data.token}; path=/; secure; HttpOnly`;
+                    window.location.href = '/dashboard.html';
+                } else {
+                    errorDiv.textContent = data.error || 'Sign-in failed. Please try again.';
+                    errorDiv.style.display = 'block';
+                    piButton.disabled = false;
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Sign In';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Network error. Please try again.';
+                errorDiv.style.display = 'block';
+                piButton.disabled = false;
+                submitButton.disabled = false;
+                submitButton.textContent = 'Sign In';
+                console.error('Pi Login Error:', error);
+            }
+        }
+
+        function onIncompletePaymentFound(payment) {
+            console.log('Incomplete Payment:', payment);
+            // Notify backend to handle incomplete payment
+            fetch('/api/payments/incomplete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ payment })
+            });
+        }
+
+        // Password toggle
+        const passwordInput = document.querySelector('#password');
+        const togglePassword = document.querySelector('.toggle-password');
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+            togglePassword.textContent = type === 'password' ? '👁️' : '👁️‍🗨️';
+            togglePassword.setAttribute('aria-label', type === 'password' ? 'Show password' : 'Hide password');
+        });
+
+        // Form validation
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = form.querySelector('#email').value;
+            const password = form.querySelector('#password').value;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (piUid.value) {
+                // Pi login already handled
+                return;
+            }
+
+            if (!emailRegex.test(email)) {
+                errorDiv.textContent = 'Please enter a valid email address.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            if (!password) {
+                errorDiv.textContent = 'Please enter your password.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            submitButton.disabled = true;
+            submitButton.textContent = 'Signing In...';
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    document.cookie = `jwt_token=${data.token}; path=/; secure; HttpOnly`;
+                    document.cookie = `user_data=${JSON.stringify(data.user)}; path=/; secure`;
+                    window.location.href = '/dashboard.html';
+                } else {
+                    errorDiv.textContent = data.error || 'Invalid email or password.';
+                    errorDiv.style.display = 'block';
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Sign In';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Network error. Please try again.';
+                errorDiv.style.display = 'block';
+                submitButton.disabled = false;
+                submitButton.textContent = 'Sign In';
+                console.error('Form Submission Error:', error);
+            }
+        });
+
+        // Header shadow on scroll
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            header.classList.toggle('scrolled', window.scrollY > 0);
+        });
+
+        // Mobile menu toggle with debounce
+        let isToggling = false;
+        const hamburger = document.querySelector('.hamburger');
+        const mobileMenu = document.querySelector('.mobile-menu');
+
+        hamburger.addEventListener('click', () => {
+            if (isToggling) return;
+            isToggling = true;
+            mobileMenu.classList.toggle('open');
+            const isOpen = mobileMenu.classList.contains('open');
+            hamburger.textContent = isOpen ? '✕' : '☰';
+            hamburger.setAttribute('aria-expanded', isOpen);
+            setTimeout(() => { isToggling = false; }, 300);
+        });
+
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('open');
+                hamburger.textContent = '☰';
+                hamburger.setAttribute('aria-expanded', false);
+            });
+        });
+
+        // Set active menu item
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            if (link.getAttribute('href') === currentPage) {
+                link.classList.add('active');
+            }
+        });
+
+        // Scroll reveal animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.05, rootMargin: '20px' });
+
+        document.querySelectorAll('.login-form, .footer-section').forEach(el => observer.observe(el));
+
+        // Mobile nav active state
+        document.querySelectorAll('.footer-mobile-nav a').forEach(link => {
+            if (link.getAttribute('href') === currentPage) {
+                link.classList.add('active');
+            }
+            link.addEventListener('click', () => {
+                document.querySelectorAll('.footer-mobile-nav a').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+            });
+        });
     </script>
+    <script src="splash.js"></script>
 </body>
 </html>
