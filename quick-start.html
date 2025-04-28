@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudyPi - Quick Start Guide</title>
+    <meta name="description" content="Learn the basics of CloudyPi in minutes with our quick start guide.">
+    <meta name="keywords" content="CloudyPi, Quick Start, Guide, Tutorial, Pi Network">
+    <!-- Google Fonts: Inter -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Inter', ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-weight: 400;
+            background: #f7f7f7;
+            color: #2d2d2d;
+            line-height: 1.5;
+            font-size: clamp(14px, 1.8vw, 15px);
+            overflow-x: hidden;
+        }
+
+        /* Splash Screen */
+        .splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f7f7f7;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        .splash-logo {
+            font-size: clamp(32px, 6vw, 40px);
+            font-weight: 600;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        .splash-logo::before {
+            content: "☁️";
+            margin-right: 12px;
+            font-size: clamp(32px, 6vw, 40px);
+        }
+        .splash-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #6366f1;
+            border-top: 4px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-top: 16px;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Desktop Header */
+        header {
+            background: #fff;
+            padding: 16px 32px;
+            border-bottom: none;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .header-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .logo {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1f2937;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+        .logo::before {
+            content: "☁️";
+            margin-right: 8px;
+            font-size: 22px;
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+        .logo:hover {
+            transform: scale(1.05);
+        }
+        .logo:hover::before {
+            transform: translateY(-2px);
+        }
+        nav {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2px;
+        }
+        nav a {
+            color: #4b5563;
+            text-decoration: none;
+            margin: 8px clamp(12px, 2vw, 16px) 8px 0;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+        nav a:hover {
+            background: #f5f6ff;
+            color: #6366f1;
+        }
+
+        /* Mobile Header */
+        .mobile-header {
+            display: none;
+            background: #fff;
+            padding: clamp(10px, 3vw, 12px) clamp(12px, 4vw, 16px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .mobile-header .logo {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+        }
+        .mobile-header .logo::before {
+            content: "☁️";
+            margin-right: 6px;
+            font-size: 20px;
+        }
+        .hamburger {
+            font-size: 20px;
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .hamburger:hover {
+            background: #f5f6ff;
+            color: #1f2937;
+        }
+
+        /* Mobile Menu */
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            max-height: 100vh;
+            background: #fff;
+            padding: 60px 16px;
+            z-index: 999;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0.3s, opacity 0.3s ease;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        .mobile-menu.open {
+            display: block;
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .mobile-menu ul {
+            list-style: none;
+        }
+        .mobile-menu li {
+            margin: 8px 0;
+        }
+        .mobile-menu a, .mobile-menu span {
+            color: #374151;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 6px;
+            transition: background 0.2s ease;
+        }
+        .mobile-menu a:hover {
+            background: #f5f6ff;
+        }
+        .mobile-menu a.active {
+            background: #f5f6ff;
+            color: #6366f1;
+        }
+        .mobile-menu .icon {
+            margin-right: 12px;
+            font-size: 16px;
+            width: 16px;
+            text-align: center;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: clamp(48px, 10vw, 80px) clamp(16px, 5vw, 32px);
+            text-align: center;
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards;
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        .hero-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .hero h1 {
+            font-size: clamp(26px, 5vw, 32px);
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #1f2937;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+        }
+        .hero p {
+            font-size: clamp(14px, 2vw, 15px);
+            color: #6b7280;
+            margin-bottom: 32px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .hero button {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: #fff;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 44px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .hero button:hover {
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Guide Section */
+        .guide {
+            max-width: 1280px;
+            margin: 64px auto;
+            padding: clamp(24px, 5vw, 32px);
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            opacity: 0;
+            animation: fadeIn 1s ease forwards;
+        }
+        .section-title {
+            font-size: clamp(26px, 5vw, 32px);
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 48px;
+            color: #1f2937;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+        .section-title.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .guide-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+        .guide-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 24px;
+            padding: 24px;
+            background: #f5f6ff;
+            border-radius: 8px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .guide-step.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .guide-step:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+        .guide-step .icon {
+            width: 50px;
+            height: 50px;
+            background: #6366f1;
+            color: #fff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        .guide-step-content h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        .guide-step-content p {
+            font-size: 13px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+        .guide-step-content a {
+            color: #6366f1;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .guide-step-content a:hover {
+            color: #4f46e5;
+        }
+
+        /* Call-to-Action Section */
+        .cta-section {
+            text-align: center;
+            padding: clamp(32px, 8vw, 48px) clamp(16px, 5vw, 32px);
+            background: #fff;
+            border-top: 1px solid #e5e7eb;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.5s ease;
+        }
+        .cta-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .cta-section h2 {
+            font-size: clamp(22px, 4vw, 24px);
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1f2937;
+            line-height: 1.3;
+        }
+        .cta-section p {
+            font-size: clamp(14px, 2vw, 15px);
+            color: #6b7280;
+            margin-bottom: 24px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .cta-section button {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: #fff;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 44px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .cta-section button:hover {
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Footer */
+        footer {
+            background: #fff;
+            color: #6b7280;
+            padding: 48px clamp(16px, 5vw, 32px);
+            border-top: none;
+            box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.08);
+        }
+        .footer-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+            gap: 32px;
+        }
+        .footer-section {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .footer-section.visible {
+            opacity: 1;
+        }
+        .footer-section h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1f2937;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+        }
+        .footer-section ul {
+            list-style: none;
+        }
+        .footer-section ul li {
+            margin-bottom: 8px;
+        }
+        .footer-section a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 400;
+            transition: color 0.2s ease;
+            display: block;
+            padding: 6px 0;
+            border-radius: 4px;
+        }
+        .footer-section a:hover {
+            color: #6366f1;
+            background: #f5f6ff;
+        }
+
+        /* Mobile Bottom Navigation */
+        .footer-mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            padding: 12px 16px;
+            box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            text-align: center;
+        }
+        .footer-mobile-nav ul {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            list-style: none;
+        }
+        .footer-mobile-nav li {
+            flex: 1;
+        }
+        .footer-mobile-nav a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 8px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        .footer-mobile-nav a:hover, .footer-mobile-nav a.active {
+            color: #6366f1;
+            background: #f5f6ff;
+        }
+        .footer-mobile-nav .icon {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        /* Subscription Form */
+        .footer-subscription {
+            max-width: 1280px;
+            margin: 32px auto 0;
+            padding: 24px;
+            background: #f7f7f7;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        .footer-subscription h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+        }
+        .footer-subscription form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            flex-direction: column;
+        }
+        @media (min-width: 480px) {
+            .footer-subscription form {
+                flex-direction: row;
+            }
+        }
+        .footer-subscription input[type="email"] {
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 400;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            width: min(100%, 280px);
+            outline: none;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .footer-subscription input[type="email"]:focus {
+            border-color: #6366f1;
+            box-shadow: 0 1px 3px rgba(99, 102, 241, 0.2);
+        }
+        .footer-subscription button {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 44px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .footer-subscription button:hover {
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Footer Bottom */
+        .footer-bottom {
+            max-width: 1280px;
+            margin: 32px auto 0;
+            font-size: 13px;
+            font-weight: 400;
+            color: #6b7280;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 24px;
+            text-align: center;
+        }
+        .footer-bottom-left {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+        .footer-bottom-links {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .footer-bottom-links a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 400;
+            transition: color 0.2s ease;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .footer-bottom-links a:hover {
+            color: #6366f1;
+            background: #f5f6ff;
+        }
+        .footer-app-name {
+            font-weight: 600;
+            color: #6366f1;
+        }
+        .social-icons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex: 1;
+        }
+        .social-icons a {
+            color: #6b7280;
+            font-size: clamp(16px, 2.5vw, 18px);
+            transition: all 0.3s ease;
+            padding: 8px;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+        .social-icons a:hover {
+            color: #6366f1;
+            background: #f5f6ff;
+            transform: scale(1.1);
+        }
+        .footer-powered {
+            flex: 1;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .header-container {
+                padding: 0 clamp(16px, 4vw, 24px);
+            }
+            .guide {
+                padding: 0 clamp(16px, 4vw, 24px);
+            }
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 768px) {
+            header {
+                display: none;
+            }
+            .mobile-header {
+                display: flex;
+            }
+            .guide {
+                padding: 0 clamp(16px, 4vw, 24px);
+            }
+            .guide-step {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .footer-content {
+                display: none;
+            }
+            .footer-mobile-nav {
+                display: block;
+            }
+            .footer-bottom {
+                flex-direction: column;
+                gap: 16px;
+            }
+            .footer-bottom-left, .social-icons, .footer-powered {
+                flex: none;
+                width: 100%;
+            }
+        }
+        @media (max-width: 480px) {
+            .hero {
+                padding: clamp(32px, 8vw, 48px) clamp(12px, 4vw, 16px);
+            }
+            .guide {
+                padding: 0 clamp(12px, 4vw, 16px);
+            }
+            .section-title {
+                font-size: clamp(22px, 5vw, 26px);
+            }
+            .cta-section {
+                padding: clamp(24px, 6vw, 32px) clamp(12px, 4vw, 16px);
+            }
+            .cta-section h2 {
+                font-size: clamp(20px, 4vw, 22px);
+            }
+            .footer-subscription form {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Splash Screen -->
+    <div class="splash" aria-hidden="true">
+        <div class="splash-logo">CloudyPi</div>
+        <div class="splash-spinner"></div>
+    </div>
+
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <div class="logo">CloudyPi</div>
+        <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">☰</button>
+    </header>
+
+    <!-- Desktop Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo">CloudyPi</div>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="features.html">Features</a>
+                <a href="pricing.html">Pricing</a>
+                <a href="categories.html">Categories</a>
+                <a href="top-creators.html">Top Creators</a>
+                <a href="learnmore.html">Learn More</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <nav class="mobile-menu">
+        <ul>
+            <li><a href="index.html"><span class="icon">🏠</span>Home</a></li>
+            <li><a href="features.html"><span class="icon">✨</span>Features</a></li>
+            <li><a href="pricing.html"><span class="icon">💰</span>Pricing</a></li>
+            <li><a href="categories.html"><span class="icon">📚</span>Categories</a></li>
+            <li><a href="top-creators.html"><span class="icon">🌟</span>Top Creators</a></li>
+            <li><a href="learnmore.html"><span class="icon">ℹ️</span>Learn More</a></li>
+            <li><a href="explore-more.html"><span class="icon">🔍</span>Explore More</a></li>
+            <li><a href="workspace-tools.html"><span class="icon">🛠️</span>Workspace Tools</a></li>
+            <li><a href="sell.html"><span class="icon">🛒</span>Sell Your Work</a></li>
+            <li><a href="our-story.html"><span class="icon">📖</span>Our Story</a></li>
+            <li><a href="pi-payments.html"><span class="icon">π</span>Pi Payments</a></li>
+            <li><a href="email-subscribers.html"><span class="icon">✉️</span>Email Subscribers</a></li>
+            <li><a href="new-releases.html"><span class="icon">🆕</span>New Releases</a></li>
+            <li><a href="team.html"><span class="icon">👥</span>Team</a></li>
+            <li><a href="discover.html"><span class="icon">🔍</span>Discover</a></li>
+            <li><a href="dashboard.html"><span class="icon">📊</span>Dashboard</a></li>
+            <li><a href="profile.html"><span class="icon">👤</span>Profile</a></li>
+            <li><a href="whitepaper.html"><span class="icon">📄</span>Whitepaper</a></li>
+            <li><a href="security.html"><span class="icon">🔒</span>Security</a></li>
+            <li><a href="notice.html"><span class="icon">📢</span>Notices</a></li>
+            <li><a href="privacy.html"><span class="icon">🛡️</span>Privacy Policy</a></li>
+            <li><a href="terms.html"><span class="icon">📝</span>Terms of Service</a></li>
+            <li><a href="cookie-settings.html"><span class="icon">🍪</span>Cookie Settings</a></li>
+            <li><a href="docs.html"><span class="icon">📘</span>Docs</a></li>
+            <li><a href="guides-tutorials.html"><span class="icon">📖</span>Guides & Tutorials</a></li>
+            <li><a href="community.html"><span class="icon">👥</span>Community</a></li>
+            <li><a href="signup.html"><span class="icon">✍️</span>Sign Up</a></li>
+            <li><a href="login.html"><span class="icon">🔑</span>Sign In</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero" aria-labelledby="hero-title">
+        <div class="hero-content">
+            <h1 id="hero-title">Quick Start Guide</h1>
+            <p>Learn the basics of CloudyPi in minutes.</p>
+            <button onclick="window.location.href='signup.html'" aria-label="Get started with CloudyPi">Get Started</button>
+        </div>
+    </div>
+
+    <!-- Guide Section -->
+    <article class="guide" aria-labelledby="guide-title">
+        <h2 class="section-title" id="guide-title">Get Up and Running with CloudyPi</h2>
+        <div class="guide-steps">
+            <div class="guide-step">
+                <div class="icon">✍️</div>
+                <div class="guide-step-content">
+                    <h3>1. Sign Up for CloudyPi</h3>
+                    <p>Create your free account to access CloudyPi’s tools and community. It takes just a minute!</p>
+                    <a href="signup.html" aria-label="Sign up for CloudyPi">Sign Up Now</a>
+                </div>
+            </div>
+            <div class="guide-step">
+                <div class="icon">🔍</div>
+                <div class="guide-step-content">
+                    <h3>2. Explore Categories</h3>
+                    <p>Browse creative content in categories like art, tech, and more to find inspiration.</p>
+                    <a href="categories.html" aria-label="Explore categories">Discover Categories</a>
+                </div>
+            </div>
+            <div class="guide-step">
+                <div class="icon">🛠️</div>
+                <div class="guide-step-content">
+                    <h3>3. Use Workspace Tools</h3>
+                    <p>Start creating with our intuitive tools, designed for beginners and pros alike.</p>
+                    <a href="workspace-tools.html" aria-label="Learn about workspace tools">Try Workspace Tools</a>
+                </div>
+            </div>
+            <div class="guide-step">
+                <div class="icon">🤝</div>
+                <div class="guide-step-content">
+                    <h3>4. Join the Community</h3>
+                    <p>Connect with creators and supporters to collaborate and grow.</p>
+                    <a href="community.html" aria-label="Join the CloudyPi community">Join the Community</a>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Call-to-Action Section -->
+    <section class="cta-section" aria-labelledby="cta-title">
+        <h2 id="cta-title">Ready to Explore More?</h2>
+        <p>Dive deeper into CloudyPi with our full range of guides and tutorials.</p>
+        <button onclick="window.location.href='guides-tutorials.html'" aria-label="Explore more guides">Explore Guides</button>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Explore more ☁️</h4>
+                <ul>
+                    <li><a href="explore-more.html">Explore More</a></li>
+                    <li><a href="categories.html">Categories</a></li>
+                    <li><a href="top-creators.html">Top Creators</a></li>
+                    <li><a href="new-releases.html">New Releases</a></li>
+                    <li><a href="discover.html">Discover</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Create</h4>
+                <ul>
+                    <li><a href="workspace-tools.html">Workspace Tools</a></li>
+                    <li><a href="sell.html">Sell Your Work</a></li>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="profile.html">Profile</a></li>
+                    <li><a href="contribute-guide.html">Contribute a Guide</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>About</h4>
+                <ul>
+                    <li><a href="our-story.html">Our Story</a></li>
+                    <li><a href="pi-payments.html">Pi Payments</a></li>
+                    <li><a href="team.html">Team</a></li>
+                    <li><a href="whitepaper.html">Whitepaper</a></li>
+                    <li><a href="community.html">Community</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="help-center.html">Help Center</a></li>
+                    <li><a href="contact-us.html">Contact Us</a></li>
+                    <li><a href="email-subscribers.html">Email Subscribers</a></li>
+                    <li><a href="pricing.html">Pricing</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-mobile-nav">
+            <ul>
+                <li><a href="index.html"><span class="icon">🏠</span>Home</a></li>
+                <li><a href="features.html"><span class="icon">✨</span>Features</a></li>
+                <li><a href="pricing.html"><span class="icon">💰</span>Pricing</a></li>
+                <li><a href="discover.html"><span class="icon">🔍</span>Discover</a></li>
+                <li><a href="profile.html"><span class="icon">👤</span>Profile</a></li>
+            </ul>
+        </div>
+        <div class="footer-subscription">
+            <h4>Subscribe to Our Newsletter ☁️</h4>
+            <form>
+                <input type="email" placeholder="Enter your email" required aria-label="Email address">
+                <button type="submit" aria-label="Subscribe to newsletter">Subscribe</button>
+            </form>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-bottom-left">
+                <span>© 2025 <span class="footer-app-name">CloudyPi</span>. All rights reserved.</span>
+                <span>We do not sell or share your personal information.</span>
+                <div class="footer-bottom-links">
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="terms.html">Terms of Service</a>
+                    <a href="cookie-settings.html">Cookie Settings</a>
+                    <a href="whitepaper.html">Whitepaper</a>
+                    <a href="docs.html">Docs</a>
+                    <a href="security.html">Security</a>
+                    <a href="notice.html">Notices</a>
+                </div>
+            </div>
+            <div class="social-icons">
+                <a href="https://facebook.com/cloudypi" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://twitter.com/cloudypi" target="_blank" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://instagram.com/cloudypi" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://telegram.org/cloudypi" target="_blank" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+                <a href="https://discord.com/cloudypi" target="_blank" aria-label="Discord"><i class="fab fa-discord"></i></a>
+            </div>
+            <span class="footer-powered">Powered by Pi Network</span>
+        </div>
+    </footer>
+
+    <script>
+        // Header shadow on scroll
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            header.classList.toggle('scrolled', window.scrollY > 0);
+        });
+
+        // Mobile menu toggle with debounce
+        let isToggling = false;
+        const hamburger = document.querySelector('.hamburger');
+        const mobileMenu = document.querySelector('.mobile-menu');
+
+        hamburger.addEventListener('click', () => {
+            if (isToggling) return;
+            isToggling = true;
+            mobileMenu.classList.toggle('open');
+            const isOpen = mobileMenu.classList.contains('open');
+            hamburger.textContent = isOpen ? '✕' : '☰';
+            hamburger.setAttribute('aria-expanded', isOpen);
+            setTimeout(() => { isToggling = false; }, 300);
+        });
+
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('open');
+                hamburger.textContent = '☰';
+                hamburger.setAttribute('aria-expanded', false);
+            });
+        });
+
+        // Set active menu item
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            if (link.getAttribute('href') === currentPage) {
+                link.classList.add('active');
+            }
+        });
+        document.querySelectorAll('.footer-mobile-nav a').forEach(link => {
+            if (link.getAttribute('href') === currentPage) {
+                link.classList.add('active');
+            }
+            link.addEventListener('click', () => {
+                document.querySelectorAll('.footer-mobile-nav a').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+            });
+        });
+
+        // Scroll reveal animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.05, rootMargin: '20px' });
+
+        document.querySelectorAll('.section-title, .guide-step, .cta-section, .footer-section').forEach(el => observer.observe(el));
+    </script>
+    <script src="splash.js"></script>
+</body>
+</html>
